@@ -71,6 +71,52 @@ const server = http.createServer((request, response) => {
                 }
             })
 
+        } else if (request.method === `PUT` && pathname.startsWith(`/phones/`)) {
+            const id = pathname.split(`/`)[2]
+            let body = ``;
+
+            request.setEncoding(`utf-8`);
+            request.on(`data`, chunk => {
+                body += chunk;
+            });
+            request.on(`end`, () => {
+
+                try {
+                    const newData = JSON.parse(body);
+                    const phone = items.find(item => item.id.toString() === id);
+                    if (!phone) {
+                        response.writeHead(404, { "content-type": `application/json` });
+                        return response.end(JSON.stringify({ message: `Telefon topilmadi` }))
+                    }
+                    const upgradePhone = { ...phone, ...newData }
+
+                    if (!newData.name && !newData.brand && !newData.price && !newData.stock) {
+                        response.writeHead(400, { "content-type": `application/json` });
+                        return response.end(JSON.stringify({ message: `eng kami bitta narsani ozgarishi kerak.` }))
+                    }
+
+                    const index = items.indexOf(phone)
+                    items[index] = upgradePhone;
+
+                    response.writeHead(200, { "content-type": `application/json` });
+                    return response.end(JSON.stringify(upgradePhone))
+                } catch (error) {
+                    response.writeHead(400, { "content-type": `application/json` })
+                    return response.end(JSON.stringify({ message: `JSON da hatolik bor` }))
+                }
+            });
+        } else if (request.method === `DELETE` && pathname.startsWith(`/phones/`)) {
+            const id = pathname.split(`/`)[2];
+            const phoneIndex = items.findIndex(item => item.id.toString() === id);
+
+            if (phoneIndex !== -1) {
+                const deletedPhone = items.splice(phoneIndex, 1)[0];
+                response.writeHead(200, { "content-type": "application/json" });
+                return response.end(JSON.stringify(deletedPhone));
+            } else {
+                response.writeHead(404, { "content-type": "application/json" });
+                return response.end(JSON.stringify({ message: "Telefon topilmadi" }));
+            }
         } else {
             response.writeHead(404, { "content-type": `application/json` })
             return response.end(JSON.stringify({ message: `topilmadi!` }));
