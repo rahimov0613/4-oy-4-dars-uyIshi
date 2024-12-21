@@ -30,6 +30,21 @@ const server = http.createServer((request, response) => {
 
         response.writeHead(200, { "content-type": "application/json" });
         response.end(JSON.stringify(getPhones));
+
+
+    } else if (pathname.startsWith(`/phones/`)) {
+        const id = pathname.split(`/`)[2]
+        const phone = items.find(item => item.id.toString() === id);
+
+        if (phone) {
+            response.writeHead(200, { "content-type": `application/json` })
+            return response.end(JSON.stringify(phone))
+
+        } else {
+            response.writeHead(404, { "content-type": `application/json` })
+            return response.end(JSON.stringify({ message: `Telefon topilmadi!` }));
+        }
+
     } else {
         response.writeHead(404, { "content-type": `application/json` })
         return response.end(JSON.stringify({ message: `topilmadi!` }));
